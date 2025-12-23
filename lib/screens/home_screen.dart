@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/destination_provider.dart';
 import '../widgets/destination_card.dart';
@@ -17,6 +16,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+
   final List<Map<String, String>> _quickStartGuides = [
     {
       'title': 'Welcome!',
@@ -39,6 +41,32 @@ class _HomeScreenState extends State<HomeScreen> {
       'icon': '🌤️',
     },
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Auto-scroll carousel
+    Future.delayed(const Duration(seconds: 3), _autoScrollCarousel);
+  }
+
+  void _autoScrollCarousel() {
+    if (!mounted) return;
+    
+    final nextPage = (_currentPage + 1) % _quickStartGuides.length;
+    _pageController.animateToPage(
+      nextPage,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+    );
+    
+    Future.delayed(const Duration(seconds: 5), _autoScrollCarousel);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -91,62 +119,79 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                CarouselSlider(
-                  options: CarouselOptions(
-                    height: 200,
-                    enlargeCenterPage: true,
-                    autoPlay: true,
-                    autoPlayInterval: const Duration(seconds: 5),
+                SizedBox(
+                  height: 200,
+                  child: PageView.builder(
+                    controller: _pageController,
+                    onPageChanged: (index) {
+                      setState(() => _currentPage = index);
+                    },
+                    itemCount: _quickStartGuides.length,
+                    itemBuilder: (context, index) {
+                      final guide = _quickStartGuides[index];
+                      return Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 16.0),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Theme.of(context).colorScheme.primary,
+                              Theme.of(context).colorScheme.secondary,
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                guide['icon']!,
+                                style: const TextStyle(fontSize: 48),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                guide['title']!,
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                guide['description']!,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.white70,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                  items: _quickStartGuides.map((guide) {
-                    return Builder(
-                      builder: (BuildContext context) {
-                        return Container(
-                          width: MediaQuery.of(context).size.width,
-                          margin: const EdgeInsets.symmetric(horizontal: 5.0),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Theme.of(context).colorScheme.primary,
-                                Theme.of(context).colorScheme.secondary,
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  guide['icon']!,
-                                  style: const TextStyle(fontSize: 48),
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  guide['title']!,
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  guide['description']!,
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.white70,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  }).toList(),
+                ),
+                const SizedBox(height: 8),
+                // Page indicators
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    _quickStartGuides.length,
+                    (index) => Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      width: _currentPage == index ? 24 : 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: _currentPage == index
+                            ? Theme.of(context).colorScheme.primary
+                            : Colors.grey[300],
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
                 ),
               ],
 

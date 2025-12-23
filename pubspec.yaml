@@ -59,10 +59,7 @@ dependencies:
   
   # URL Launcher
   url_launcher: ^6.2.2
-  
-  # Carousel
-  carousel_slider: ^4.2.1
-  
+    
   # Intl for formatting
   intl: ^0.18.1
 
@@ -89,9 +86,7 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  assets:
-    - assets/images/
-    - assets/icons/
+  
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
